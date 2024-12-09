@@ -1,132 +1,114 @@
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
-namespace Copitos20241209.Controllers
+namespace Copitos20241209.Controllers;
+
+[ApiController]
+[Route("/people")]
+public class PeopleController : ControllerBase
 {
-	public class Person
+	private readonly AppDb db;
+
+	public PeopleController(AppDb db)
 	{
-		public Guid Id { get; set; }
-
-		public String? Anrede { get; set; }
-
-		[Required]
-		public required String Vorname { get; set; }
-
-		[Required]
-		public required String Nachname { get; set; }
-
-		public DateTime Geburtsdatum { get; set; }
-
-		public String? Adresse { get; set; }
-
-		[Required]
-		public required String Plz { get; set; }
-
-		public String? Ort { get; set; }
-
-		public String? Land { get; set; }
+		this.db = db;
 	}
 
-	[ApiController]
-	[Route("/people")]
-	public class PeopleController : ControllerBase
+	Person? Find(Guid id)
 	{
-		static List<Person> People { get; set; } = new List<Person>();
+		var person = db.People
+			.Where(p => p.Id == id)
+			.FirstOrDefault();
 
-		public PeopleController()
+		return person;
+	}
+
+	[HttpGet]
+	public IEnumerable<Person> GetAll()
+	{
+		return db.People.ToArray();
+	}
+
+	[HttpGet("{id}")]
+	public ActionResult GetById(Guid id)
+	{
+		var person = Find(id);
+
+		if (person is null)
 		{
+			return NotFound();
 		}
 
-		Person? Find(Guid id)
-		{
-			var person = People
-				.Where(p => p.Id == id)
-				.FirstOrDefault();
+		return Ok(person);
+	}
 
-			return person;
+	[HttpPost]
+	public ActionResult Post(Person person)
+	{
+		if (Validate(person) is String error)
+		{
+			return BadRequest(error);
 		}
 
-		[HttpGet]
-		public IEnumerable<Person> GetAll()
+		person.Id = Guid.NewGuid();
+
+		db.People.Add(person);
+		db.SaveChanges();
+
+		return Ok(person);
+	}
+
+	[HttpPut("{id}")]
+	public ActionResult Put(Guid id, Person person)
+	{
+		if (Find(id) is not Person existing)
 		{
-			return People;
+			return NotFound();
 		}
 
-		[HttpGet("{id}")]
-		public ActionResult GetById(Guid id)
+		if (Validate(person) is String error)
 		{
-			var person = Find(id);
-
-			if (person is null)
-			{
-				return NotFound();
-			}
-
-			return Ok(person);
+			return BadRequest(error);
 		}
 
-		[HttpPost]
-		public ActionResult Post(Person person)
+		person.Id = id;
+
+		// This should be at least done in a transaction.
+
+		db.People.Remove(existing);
+		db.SaveChanges();
+
+		db.People.Add(person);
+		db.SaveChanges();
+
+		return Ok(person);
+	}
+
+	[HttpDelete("{id}")]
+	public ActionResult Delete(Guid id)
+	{
+		if (Find(id) is not Person existing)
 		{
-			if (Validate(person) is String error)
-			{
-				return BadRequest(error);
-			}
-
-			person.Id = Guid.NewGuid();
-
-			People.Add(person);
-
-			return Ok(person);
+			return NotFound();
 		}
 
-		[HttpPut("{id}")]
-		public ActionResult Put(Guid id, Person person)
-		{
-			if (Find(id) is not Person existing)
-			{
-				return NotFound();
-			}
+		db.Remove(existing);
+		db.SaveChanges();
 
-			if (Validate(person) is String error)
-			{
-				return BadRequest(error);
-			}
+		return Ok(existing);
+	}
 
-			person.Id = id;
+	String? Validate(Person person)
+	{
+		if (person.Geburtsdatum == default) return "'Geburtsdatum' is required";
 
-			People.Remove(existing);
-			People.Add(person);
+		if (person.Geburtsdatum > DateTime.Now) return "'Geburtsdatum' must lie in the past";
 
-			return Ok(person);
-		}
+		if (person.Plz.Length != 5) return "'plz' must be 5 digits long";
 
-		[HttpDelete("{id}")]
-		public ActionResult Delete(Guid id)
-		{
-			if (Find(id) is not Person existing)
-			{
-				return NotFound();
-			}
+		if (!person.Plz.All(Char.IsDigit)) return "'plz' must be all digits";
 
-			People.Remove(existing);
+		if (person.Land is String land && land.Length != 2) return "'land' must be exactly 2 characters long when specified";
 
-			return Ok(existing);
-		}
-
-		String? Validate(Person person)
-		{
-			if (person.Geburtsdatum == default) return "'Geburtsdatum' is required";
-
-			if (person.Geburtsdatum > DateTime.Now) return "'Geburtsdatum' must lie in the past";
-
-			if (person.Plz.Length != 5) return "'plz' must be 5 digits long";
-
-			if (!person.Plz.All(Char.IsDigit)) return "'plz' must be all digits";
-
-			if (person.Land is String land && land.Length != 2) return "'land' must be exactly 2 characters long when specified";
-
-			return null;
-		}
+		return null;
 	}
 }
