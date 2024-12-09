@@ -1,0 +1,84 @@
+@Copitos20241209_HostAddress = http://localhost:5062
+
+GET {{Copitos20241209_HostAddress}}/people
+Accept: application/json
+
+###
+
+GET {{Copitos20241209_HostAddress}}/people/35baa359-6fa3-4607-9c34-be148eed8a21
+Accept: application/json
+
+###
+
+DELETE {{Copitos20241209_HostAddress}}/people/3fc2246a-55ab-4858-9b69-48b3d1b15876
+Accept: application/json
+
+###
+
+POST {{Copitos20241209_HostAddress}}/people
+Accept: application/json
+Content-Type: application/json
+
+{ 
+  "anrede": "Herr", 
+  "vorname": "Max", 
+  "nachname": "Mustermann", 
+  "geburtsdatum": "1990-01-01", 
+  "adresse": "Musterstraﬂe 1", 
+  "plz": "12345", 
+  "ort": "Musterstadt", 
+  "land": "DE" 
+}
+
+###
+
+POST {{Copitos20241209_HostAddress}}/people
+Accept: application/json
+Content-Type: application/json
+
+{ 
+  "anrede": "Herr", 
+  "vorname": "Max", 
+  "nachname": "Mustermann", 
+  "geburtsdatum": "1990-01-01", 
+  "adresse": "Musterstraﬂe 1", 
+  "plz": "12345", 
+  "ort": "Musterstadt", 
+  "land": "DEU" 
+}
+
+###
+
+POST {{Copitos20241209_HostAddress}}/people
+Accept: application/json
+Content-Type: application/json
+
+{ 
+  "anrede": "Herr", 
+  "vorname": "Max", 
+  "nachname": "Mustermann", 
+  "geburtsdatum": "2020-01-01", 
+  "adresse": "Musterstraﬂe 1", 
+  "plz": "12345", 
+  "ort": "Musterstadt", 
+  "land": "DE" 
+}
+
+###
+
+PUT {{Copitos20241209_HostAddress}}/people/35baa359-6fa3-4607-9c34-be148eed8a21
+Accept: application/json
+Content-Type: application/json
+
+{ 
+  "anrede": "Herr", 
+  "vorname": "Max", 
+  "nachname": "Mustermann3", 
+  "geburtsdatum": "2020-01-01", 
+  "adresse": "Musterstraﬂe 1", 
+  "plz": "12345", 
+  "ort": "Musterstadt", 
+  "land": "DE" 
+}
+
+###
